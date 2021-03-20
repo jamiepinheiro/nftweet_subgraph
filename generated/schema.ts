@@ -12,7 +12,7 @@ import {
   BigDecimal
 } from "@graphprotocol/graph-ts";
 
-export class Approval extends Entity {
+export class Tweet extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -20,17 +20,17 @@ export class Approval extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id !== null, "Cannot save Approval entity without an ID");
+    assert(id !== null, "Cannot save Tweet entity without an ID");
     assert(
       id.kind == ValueKind.STRING,
-      "Cannot save Approval entity with non-string ID. " +
+      "Cannot save Tweet entity with non-string ID. " +
         'Considering using .toHex() to convert the "id" to a string.'
     );
-    store.set("Approval", id.toString(), this);
+    store.set("Tweet", id.toString(), this);
   }
 
-  static load(id: string): Approval | null {
-    return store.get("Approval", id) as Approval | null;
+  static load(id: string): Tweet | null {
+    return store.get("Tweet", id) as Tweet | null;
   }
 
   get id(): string {
@@ -42,35 +42,44 @@ export class Approval extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get owner(): Bytes {
-    let value = this.get("owner");
-    return value.toBytes();
-  }
-
-  set owner(value: Bytes) {
-    this.set("owner", Value.fromBytes(value));
-  }
-
-  get approved(): Bytes {
-    let value = this.get("approved");
-    return value.toBytes();
-  }
-
-  set approved(value: Bytes) {
-    this.set("approved", Value.fromBytes(value));
-  }
-
-  get tokenId(): BigInt {
-    let value = this.get("tokenId");
+  get tweetID(): BigInt {
+    let value = this.get("tweetID");
     return value.toBigInt();
   }
 
-  set tokenId(value: BigInt) {
-    this.set("tokenId", Value.fromBigInt(value));
+  set tweetID(value: BigInt) {
+    this.set("tweetID", Value.fromBigInt(value));
+  }
+
+  get metadataURI(): string {
+    let value = this.get("metadataURI");
+    return value.toString();
+  }
+
+  set metadataURI(value: string) {
+    this.set("metadataURI", Value.fromString(value));
+  }
+
+  get currentOwnership(): string {
+    let value = this.get("currentOwnership");
+    return value.toString();
+  }
+
+  set currentOwnership(value: string) {
+    this.set("currentOwnership", Value.fromString(value));
+  }
+
+  get ownerships(): Array<string> {
+    let value = this.get("ownerships");
+    return value.toStringArray();
+  }
+
+  set ownerships(value: Array<string>) {
+    this.set("ownerships", Value.fromStringArray(value));
   }
 }
 
-export class ApprovalForAll extends Entity {
+export class User extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -78,17 +87,17 @@ export class ApprovalForAll extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id !== null, "Cannot save ApprovalForAll entity without an ID");
+    assert(id !== null, "Cannot save User entity without an ID");
     assert(
       id.kind == ValueKind.STRING,
-      "Cannot save ApprovalForAll entity with non-string ID. " +
+      "Cannot save User entity with non-string ID. " +
         'Considering using .toHex() to convert the "id" to a string.'
     );
-    store.set("ApprovalForAll", id.toString(), this);
+    store.set("User", id.toString(), this);
   }
 
-  static load(id: string): ApprovalForAll | null {
-    return store.get("ApprovalForAll", id) as ApprovalForAll | null;
+  static load(id: string): User | null {
+    return store.get("User", id) as User | null;
   }
 
   get id(): string {
@@ -100,35 +109,17 @@ export class ApprovalForAll extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get owner(): Bytes {
-    let value = this.get("owner");
-    return value.toBytes();
+  get ownerships(): Array<string> {
+    let value = this.get("ownerships");
+    return value.toStringArray();
   }
 
-  set owner(value: Bytes) {
-    this.set("owner", Value.fromBytes(value));
-  }
-
-  get operator(): Bytes {
-    let value = this.get("operator");
-    return value.toBytes();
-  }
-
-  set operator(value: Bytes) {
-    this.set("operator", Value.fromBytes(value));
-  }
-
-  get approved(): boolean {
-    let value = this.get("approved");
-    return value.toBoolean();
-  }
-
-  set approved(value: boolean) {
-    this.set("approved", Value.fromBoolean(value));
+  set ownerships(value: Array<string>) {
+    this.set("ownerships", Value.fromStringArray(value));
   }
 }
 
-export class Transfer extends Entity {
+export class Ownership extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -136,17 +127,17 @@ export class Transfer extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id !== null, "Cannot save Transfer entity without an ID");
+    assert(id !== null, "Cannot save Ownership entity without an ID");
     assert(
       id.kind == ValueKind.STRING,
-      "Cannot save Transfer entity with non-string ID. " +
+      "Cannot save Ownership entity with non-string ID. " +
         'Considering using .toHex() to convert the "id" to a string.'
     );
-    store.set("Transfer", id.toString(), this);
+    store.set("Ownership", id.toString(), this);
   }
 
-  static load(id: string): Transfer | null {
-    return store.get("Transfer", id) as Transfer | null;
+  static load(id: string): Ownership | null {
+    return store.get("Ownership", id) as Ownership | null;
   }
 
   get id(): string {
@@ -158,30 +149,47 @@ export class Transfer extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get from(): Bytes {
-    let value = this.get("from");
-    return value.toBytes();
+  get user(): string {
+    let value = this.get("user");
+    return value.toString();
   }
 
-  set from(value: Bytes) {
-    this.set("from", Value.fromBytes(value));
+  set user(value: string) {
+    this.set("user", Value.fromString(value));
   }
 
-  get to(): Bytes {
-    let value = this.get("to");
-    return value.toBytes();
+  get tweet(): string {
+    let value = this.get("tweet");
+    return value.toString();
   }
 
-  set to(value: Bytes) {
-    this.set("to", Value.fromBytes(value));
+  set tweet(value: string) {
+    this.set("tweet", Value.fromString(value));
   }
 
-  get tokenId(): BigInt {
-    let value = this.get("tokenId");
+  get start(): BigInt {
+    let value = this.get("start");
     return value.toBigInt();
   }
 
-  set tokenId(value: BigInt) {
-    this.set("tokenId", Value.fromBigInt(value));
+  set start(value: BigInt) {
+    this.set("start", Value.fromBigInt(value));
+  }
+
+  get end(): BigInt | null {
+    let value = this.get("end");
+    if (value === null || value.kind == ValueKind.NULL) {
+      return null;
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set end(value: BigInt | null) {
+    if (value === null) {
+      this.unset("end");
+    } else {
+      this.set("end", Value.fromBigInt(value as BigInt));
+    }
   }
 }

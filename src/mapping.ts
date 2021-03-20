@@ -1,36 +1,39 @@
 import {
-  Approval as ApprovalEvent,
-  ApprovalForAll as ApprovalForAllEvent,
-  Transfer as TransferEvent
+  Transfer as TransferEvent,
+  NFTweet as NFTweetContract
 } from "../generated/NFTweet/NFTweet"
-import { Approval, ApprovalForAll, Transfer } from "../generated/schema"
-
-export function handleApproval(event: ApprovalEvent): void {
-  let entity = new Approval(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity.owner = event.params.owner
-  entity.approved = event.params.approved
-  entity.tokenId = event.params.tokenId
-  entity.save()
-}
-
-export function handleApprovalForAll(event: ApprovalForAllEvent): void {
-  let entity = new ApprovalForAll(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity.owner = event.params.owner
-  entity.operator = event.params.operator
-  entity.approved = event.params.approved
-  entity.save()
-}
+import { Ownership, Tweet, User } from "../generated/schema"
 
 export function handleTransfer(event: TransferEvent): void {
-  let entity = new Transfer(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
-  )
-  entity.from = event.params.from
-  entity.to = event.params.to
-  entity.tokenId = event.params.tokenId
-  entity.save()
+  // Get the user (or make a new one if needed)
+  let user = User.load(event.params.to.toHexString())
+  if (user == null) {
+    user = new User(event.params.to.toHexString())
+    user.save()
+  }
+
+  // See if tweet has already been minted
+  let tweet = Tweet.load(event.params.tokenId.toString())
+  if (tweet != null) {
+    // End previous ownership
+    let prevOwnership = Ownership.load(tweet.currentOwnership)
+    prevOwnership.end = event.block.timestamp
+    prevOwnership.save()
+  } else {
+    // Create new tweet
+    tweet = new Tweet(event.params.tokenId.toString())
+    tweet.tweetID = event.params.tokenId
+    let nftweetContract = NFTweetContract.bind(event.address)
+    tweet.metadataURI = nftweetContract.tokenURI(event.params.tokenId)
+  }
+
+  // Create new ownership
+  let ownership = new Ownership(event.transaction.hash.toHexString())
+  ownership.user = user.id
+  ownership.tweet = tweet.id
+  ownership.start = event.block.timestamp
+  ownership.save()
+
+  tweet.currentOwnership = event.transaction.hash.toHexString();
+  tweet.save()
 }
